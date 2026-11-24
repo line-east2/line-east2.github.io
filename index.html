@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Line East2 Open JC Analysis</title>
+<script src="config.js"></script>
+<style>
+:root{--navy:#0b2545;--navy2:#13315c;--blue:#1d64d8;--bg:#f3f5f9;--card:#fff;--line:#dde3ec;--text:#1b2433;--muted:#667085;
+--green:#12805c;--greenbg:#e3f5ec;--amber:#b45309;--amberbg:#fef3c7;--red:#c0262d;--redbg:#fde8e8;--ev:#0e7c86;--pv:#3949ab}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.45 "Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{background:linear-gradient(90deg,var(--navy),var(--navy2));color:#fff;padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+header h1{font-size:18px;margin:0;font-weight:600;letter-spacing:.2px}
+header .sub{font-size:12px;opacity:.8}
+header .sp{flex:1}
+header button{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.3)}
+main{max-width:1320px;margin:0 auto;padding:16px}
+button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:7px;padding:7px 14px;cursor:pointer;color:var(--text)}
+button.pri{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
+button.danger{background:var(--red);border-color:var(--red);color:#fff}
+button:disabled{opacity:.5;cursor:not-allowed}
+input,select,textarea{font:inherit;border:1px solid #c9d2df;border-radius:7px;padding:7px 9px;background:#fff;color:var(--text);max-width:100%}
+textarea{width:100%;resize:vertical;min-height:38px}
+label.f{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);font-weight:600}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px}
+.card h2{font-size:15px;margin:0 0 10px;color:var(--navy)}
+.card h2 small{font-weight:400;color:var(--muted);font-size:12px;margin-left:6px}
+.center{max-width:420px;margin:50px auto}
+.center input{width:100%;margin-bottom:10px}
+.msg{padding:9px 12px;border-radius:7px;margin:8px 0;font-size:13px}
+.msg.err{background:var(--redbg);color:var(--red)}
+.msg.ok{background:var(--greenbg);color:var(--green)}
+.msg.warn{background:var(--amberbg);color:var(--amber)}
+.muted{color:var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.filters select{min-width:150px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 13px;border-left:4px solid var(--blue)}
+.kpi .v{font-size:23px;font-weight:700;color:var(--navy)}
+.kpi .l{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+.kpi.g{border-left-color:var(--green)}.kpi.a{border-left-color:#e0a106}.kpi.r{border-left-color:var(--red)}.kpi.t{border-left-color:var(--ev)}
+.tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tabs button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.tw{overflow:auto;max-height:560px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{padding:6px 8px;border-bottom:1px solid #edf0f5;text-align:right;white-space:nowrap}
+th{background:#f0f3f8;color:#344054;position:sticky;top:0;z-index:1;font-weight:600}
+th:first-child,td:first-child,td.l,th.l{text-align:left}
+tr.tot td{font-weight:700;background:#f7f9fc;border-top:2px solid #cfd8e3}
+tr.sub td{background:#fbfcfe;color:#475467;font-size:12px}
+tr.sub td:first-child{padding-left:26px}
+tr.click{cursor:pointer}
+tr.click:hover td{background:#f5f8ff}
+.bar{height:9px;background:#e8edf5;border-radius:5px;min-width:80px;position:relative}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--blue);border-radius:5px}
+.pill{display:inline-block;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.pill.pv{background:#e8eaf6;color:var(--pv)}.pill.ev{background:#e0f2f1;color:var(--ev)}
+.pill.ok{background:var(--greenbg);color:var(--green)}.pill.pen{background:var(--redbg);color:var(--red)}.pill.uns{background:var(--amberbg);color:var(--amber)}
+.age{display:inline-block;min-width:44px;text-align:center;padding:1px 7px;border-radius:10px;font-weight:700;font-size:12px}
+.a1{background:#e3f5ec;color:#12805c}.a2{background:#fff4d6;color:#9a6b00}.a3{background:#ffe6cc;color:#b45309}.a4{background:#fde8e8;color:#c0262d}.a5{background:#f6d5d7;color:#8f1d22}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+.stack{display:flex;height:22px;border-radius:5px;overflow:hidden;background:#eef2f7}
+.stack span{display:block;height:100%}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;margin-top:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+/* CCM cards */
+.jc{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;border-left:4px solid #c9d2df}
+.jc.done{border-left-color:var(--green)}.jc.dirty{border-left-color:#e0a106;background:#fffdf5}.jc.bad{border-left-color:var(--red)}
+.jc .top{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.jc .top b{font-size:14px}
+.jc .info{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:3px 14px;font-size:12.5px;margin-bottom:8px}
+.jc .info span{color:var(--muted)}
+.jc .dms{background:#f6f8fb;border-radius:7px;padding:7px 9px;font-size:12.5px;margin-bottom:8px}
+.jc .inp{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:8px}
+@media(max-width:760px){.jc .inp{grid-template-columns:1fr}}
+.jc .inp select{width:100%}
+.jc .meta{font-size:11.5px;color:var(--muted);margin-top:5px}
+.savebar{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;box-shadow:0 -3px 10px rgba(0,0,0,.05);z-index:5;margin:0 -16px}
+.savebar .st{flex:1;font-size:13px}
+.prog{height:8px;background:#e8edf5;border-radius:5px;overflow:hidden;flex:1;min-width:120px}
+.prog i{display:block;height:100%;background:var(--green)}
+.hidden{display:none!important}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid #c9d2df;border-top-color:var(--blue);border-radius:50%;animation:sp 0.8s linear infinite;vertical-align:-2px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.heat0{background:transparent}
+@media(max-width:640px){
+  main{padding:10px}header{padding:10px 14px}header h1{font-size:16px}
+  .filters{padding:10px}.filters .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .filters select,.filters input{min-width:0;width:100%}
+  .kpis{grid-template-columns:repeat(3,1fr);gap:6px}.kpi{padding:7px 8px}.kpi .v{font-size:18px}.kpi .l{font-size:10px}
+  .jc{padding:10px}.jc .info{grid-template-columns:1fr 1fr;font-size:12px}
+  .savebar{margin:0 -10px;padding:8px 10px}
+}
+.linkbox{font-family:Consolas,monospace;background:#f6f8fb;padding:6px 9px;border-radius:6px;word-break:break-all;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1 id="appTitle">Line East2 Open JC Analysis</h1>
+    <div class="sub" id="hdrSub">&nbsp;</div>
+  </div>
+  <div class="sp"></div>
+  <div id="hdrBtns"></div>
+</header>
+<main id="app"><div class="center muted"><span class="spin"></span> Loading…</div></main>
+
+<script>
+'use strict';
+/* =============================== common =============================== */
+const CFG = window.PORTAL_CONFIG || {};
+const API = CFG.api || '';
+const TITLE = CFG.title || 'Line East2 Open JC Analysis';
+document.title = TITLE; document.getElementById('appTitle').textContent = TITLE;
+const IS_ADMIN = new URLSearchParams(location.search).get('page') === 'admin';
+const $app = document.getElementById('app');
+const AGE_BUCKETS = ['0-2', '3-7', '8-15', '16-30', '31-60', '>60'];
+const AGE_COLORS = ['#7cc6a4', '#f3c64f', '#f39c4a', '#e5676c', '#b6363c', '#6d1a1e'];
+const NOT_BINNED = 'Not yet binned';
+
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+};
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function prettyBin(b) { return String(b || '').replace(/_/g, ' '); }
+function num(v) { const n = Number(v); return isFinite(n) ? n : 0; }
+function ageOf(r) { return num(r['JC Open Days']); }
+function bucketOf(d) { return d <= 2 ? 0 : d <= 7 ? 1 : d <= 15 ? 2 : d <= 30 ? 3 : d <= 60 ? 4 : 5; }
+function ageCls(d) { return 'a' + (d <= 2 ? 1 : d <= 7 ? 2 : d <= 15 ? 3 : d <= 30 ? 4 : 5); }
+function fmtD(s) {
+  s = String(s || ''); const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return s; const mon = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][+m[2] - 1];
+  return m[3] + '-' + mon + '-' + m[1].slice(2);
+}
+function pct(a, b) { return b ? Math.round(a * 1000 / b) / 10 : 0; }
+function uniq(a) { return [...new Set(a.filter(x => x !== '' && x != null))].sort((x, y) => String(x).localeCompare(String(y))); }
+function opts(list, sel, all) { return (all ? `<option value="">${esc(all)}</option>` : '') + list.map(v => `<option value="${esc(v)}"${v === sel ? ' selected' : ''}>${esc(v)}</option>`).join(''); }
+function isBinned(r) { return !!String(r['Binning'] || '').trim(); }
+
+class NetError extends Error {}
+async function api(action, payload, timeoutMs) {
+  if (!API) throw new Error('The portal is not connected to its back-end yet (config.js has no API address).');
+  const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), timeoutMs || 60000);
+  let res;
+  try {
+    res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(Object.assign({ action }, payload || {})), signal: ctl.signal, redirect: 'follow' });
+  } catch (e) { throw new NetError('Network problem – could not reach the server.'); }
+  finally { clearTimeout(t); }
+  if (!res.ok) throw new NetError('Server not reachable (HTTP ' + res.status + ').');
+  let j; try { j = await res.json(); } catch (e) { throw new NetError('Unexpected reply from server.'); }
+  if (!j.ok) { const er = new Error(j.error || 'Error'); er.code = j.error; throw er; }
+  return j;
+}
+function hdr(sub, btns) {
+  document.getElementById('hdrSub').innerHTML = sub || '&nbsp;';
+  document.getElementById('hdrBtns').innerHTML = btns || '';
+}
+
+/* ============================ aggregation ============================= */
+function groupStats(rows, keyFn) {
+  const m = new Map();
+  rows.forEach(r => {
+    const k = keyFn(r); if (!m.has(k)) m.set(k, []); m.get(k).push(r);
+  });
+  return [...m.entries()].map(([k, rs]) => statOf(k, rs));
+}
+function statOf(k, rs) {
+  const s = { key: k, total: rs.length, pv: 0, ev: 0, upd: 0, pen: 0, gt7: 0, gt30: 0, sumAge: 0, b: AGE_BUCKETS.map(() => 0), bins: {} };
+  rs.forEach(r => {
+    const a = ageOf(r); s.sumAge += a;
+    if (r['Segment'] === 'EV') s.ev++; else s.pv++;
+    if (isBinned(r)) s.upd++; else s.pen++;
+    if (a > 7) s.gt7++; if (a > 30) s.gt30++;
+    s.b[bucketOf(a)]++;
+    const bn = isBinned(r) ? r['Binning'] : NOT_BINNED; s.bins[bn] = (s.bins[bn] || 0) + 1;
+  });
+  s.avg = rs.length ? Math.round(s.sumAge / rs.length * 10) / 10 : 0;
+  s.fill = pct(s.upd, s.total);
+  const top = Object.entries(s.bins).filter(e => e[0] !== NOT_BINNED).sort((a, b) => b[1] - a[1])[0];
+  s.topBin = top ? prettyBin(top[0]) + ' (' + top[1] + ')' : '–';
+  s.rows = rs;
+  return s;
+}
+function binOrder(taxonomy, rows) {
+  const names = taxonomy.map(b => b.name);
+  rows.forEach(r => { if (isBinned(r) && !names.includes(r['Binning'])) names.push(r['Binning']); });
+  return names.concat([NOT_BINNED]);
+}
+
+/* =============================== CCM page ============================= */
+const CCM = {
+  code: store.get('ejc_code', ''), rows: [], tax: [], last: null, drafts: store.get('ejc_drafts_v1', {}),
+  f: store.get('ejc_ccm_filters', { ccm: '', seg: '', dealer: '', div: '', show: 'pending', q: '' }),
+  saving: false, retryTimer: null, limit: 60, byJc: {}
+};
+
+async function ccmStart() {
+  hdr('Open JC update – for CCMs');
+  if (!CCM.code) return ccmCodeScreen();
+  $app.innerHTML = '<div class="center muted"><span class="spin"></span> Loading open JCs…</div>';
+  try {
+    const d = await api('ccmData', { code: CCM.code });
+    CCM.rows = d.rows; CCM.tax = d.taxonomy; CCM.last = d.lastUpload;
+    store.set('ejc_ccm_cache', { rows: d.rows, tax: d.taxonomy, last: d.lastUpload, at: Date.now() });
+    ccmReady(false);
+  } catch (e) {
+    if (e.code === 'WRONG_CODE') { CCM.code = ''; store.del('ejc_code'); return ccmCodeScreen('That access code is not valid any more. Please enter the current code.'); }
+    const c = store.get('ejc_ccm_cache', null);
+    if (e instanceof NetError && c) {
+      CCM.rows = c.rows; CCM.tax = c.tax; CCM.last = c.last; ccmReady(true);
+    } else {
+      $app.innerHTML = `<div class="center card"><div class="msg err">${esc(e.message)}</div><button class="pri" onclick="ccmStart()">Try again</button></div>`;
+    }
+  }
+}
+function ccmCodeScreen(msg) {
+  $app.innerHTML = `<div class="center card"><h2>CCM access</h2>
+  <p class="muted">Enter the access code shared by your Regional Customer Care Manager.</p>
+  ${msg ? `<div class="msg err">${esc(msg)}</div>` : ''}
+  <input id="cc" type="password" placeholder="Access code" autocomplete="off">
+  <button class="pri" id="ccb" style="width:100%">Continue</button><div id="ccm_m"></div></div>`;
+  const go = async () => {
+    const v = document.getElementById('cc').value.trim(); if (!v) return;
+    const b = document.getElementById('ccb'); b.disabled = true;
+    try { await api('ccmCheck', { code: v }); CCM.code = v; store.set('ejc_code', v); ccmStart(); }
+    catch (e) { b.disabled = false; document.getElementById('ccm_m').innerHTML = `<div class="msg err">${esc(e.code === 'WRONG_CODE' ? 'Wrong access code.' : e.message)}</div>`; }
+  };
+  document.getElementById('ccb').onclick = go;
+  document.getElementById('cc').onkeydown = e => { if (e.key === 'Enter') go(); };
+}
+
+function ccmReady(offline) {
+  CCM.byJc = {}; CCM.rows.forEach(r => { CCM.byJc[r['JC #']] = r; });
+  // drop drafts for JCs no longer open, and drafts already equal to the saved values
+  let dropped = 0;
+  Object.keys(CCM.drafts).forEach(jc => {
+    const r = CCM.byJc[jc];
+    if (!r) { delete CCM.drafts[jc]; dropped++; return; }
+    const d = CCM.drafts[jc];
+    if (d.bin === (r['Binning'] || '') && d.sub === (r['Sub Binning'] || '') && d.remark === (r['CCM remark'] || '')) delete CCM.drafts[jc];
+  });
+  saveDrafts();
+  const ccms = uniq(CCM.rows.map(r => r['CCM']));
+  if (CCM.f.ccm && !ccms.includes(CCM.f.ccm)) CCM.f.ccm = '';
+  const L = CCM.last;
+  hdr(L ? `Data as on <b>${esc(fmtD(L.dataDate))}</b> · ${CCM.rows.length} open JCs` : 'No data uploaded yet',
+    `<button onclick="ccmLogout()">Change code</button>`);
+  $app.innerHTML = `
+  ${offline ? `<div class="msg warn">You are offline – showing the copy saved on this device. Your changes are kept here and will be saved when the network is back.</div>` : ''}
+  ${dropped ? `<div class="msg warn">${dropped} unsaved change(s) were for JCs that are no longer open in the latest data, so they were removed.</div>` : ''}
+  <div id="resumeMsg"></div>
+  <div class="card filters">
+    <div class="row">
+      <label class="f">CCM *<select id="fCcm">${opts(ccms, CCM.f.ccm, '— Select your name —')}</select></label>
+      <label class="f">Segment<select id="fSeg"></select></label>
+      <label class="f">Dealer<select id="fDealer"></select></label>
+      <label class="f">Division<select id="fDiv"></select></label>
+      <label class="f">Show<select id="fShow">${opts(['pending', 'updated', 'all', 'unsaved'], CCM.f.show).replace('>pending<', '>Pending update<').replace('>updated<', '>Already updated<').replace('>all<', '>All<').replace('>unsaved<', '>Unsaved on this device<')}</select></label>
+      <label class="f">Search JC / Reg / Chassis<input id="fQ" value="${esc(CCM.f.q)}" placeholder="Type to search"></label>
+    </div>
+  </div>
+  <div id="ccmSum"></div>
+  <div id="ccmList"></div>
+  <div class="savebar"><div class="st" id="saveSt"></div><button class="pri" id="saveBtn">Save</button></div>`;
+  ['fCcm', 'fSeg', 'fDealer', 'fDiv', 'fShow'].forEach(id => document.getElementById(id).onchange = ccmFilterChanged);
+  let qt; document.getElementById('fQ').oninput = () => { clearTimeout(qt); qt = setTimeout(ccmFilterChanged, 250); };
+  document.getElementById('saveBtn').onclick = () => ccmSave(false);
+  const list = document.getElementById('ccmList');
+  list.addEventListener('change', ccmFieldChanged);
+  list.addEventListener('input', e => { if (e.target.tagName === 'TEXTAREA') ccmFieldChanged(e); });
+  ccmFillFilterOpts(); ccmRender();
+  // Resume an interrupted save automatically
+  if (!offline && store.get('ejc_save_pending', false) && Object.keys(CCM.drafts).length) {
+    document.getElementById('resumeMsg').innerHTML = `<div class="msg warn">Resuming your last save that was interrupted…</div>`;
+    setTimeout(() => ccmSave(true), 600);
+  }
+}
+function ccmLogout() { CCM.code = ''; store.del('ejc_code'); ccmCodeScreen(); }
+
+function ccmBase() { return CCM.rows.filter(r => !CCM.f.ccm || r['CCM'] === CCM.f.ccm); }
+function ccmFillFilterOpts() {
+  const f = CCM.f, base = ccmBase();
+  const segs = uniq(base.map(r => r['Segment'])); if (!segs.includes(f.seg)) f.seg = '';
+  const b2 = base.filter(r => !f.seg || r['Segment'] === f.seg);
+  const dealers = uniq(b2.map(r => r['Dealer'])); if (!dealers.includes(f.dealer)) f.dealer = '';
+  const b3 = b2.filter(r => !f.dealer || r['Dealer'] === f.dealer);
+  const divs = uniq(b3.map(r => r['Division'])); if (!divs.includes(f.div)) f.div = '';
+  document.getElementById('fSeg').innerHTML = opts(segs, f.seg, 'All');
+  document.getElementById('fDealer').innerHTML = opts(dealers, f.dealer, 'All dealers');
+  document.getElementById('fDiv').innerHTML = opts(divs, f.div, 'All divisions');
+}
+function ccmFilterChanged() {
+  const f = CCM.f;
+  f.ccm = document.getElementById('fCcm').value; f.seg = document.getElementById('fSeg').value;
+  f.dealer = document.getElementById('fDealer').value; f.div = document.getElementById('fDiv').value;
+  f.show = document.getElementById('fShow').value; f.q = document.getElementById('fQ').value.trim();
+  store.set('ejc_ccm_filters', f); CCM.limit = 60;
+  ccmFillFilterOpts(); ccmRender();
+}
+function curVal(r) {
+  const d = CCM.drafts[r['JC #']];
+  return d ? d : { bin: r['Binning'] || '', sub: r['Sub Binning'] || '', remark: r['CCM remark'] || '' };
+}
+function ccmFiltered() {
+  const f = CCM.f, q = f.q.toLowerCase();
+  return ccmBase().filter(r => (!f.seg || r['Segment'] === f.seg) && (!f.dealer || r['Dealer'] === f.dealer) && (!f.div || r['Division'] === f.div)
+    && (!q || [r['JC #'], r['Registration No'], r['Chassis No']].join(' ').toLowerCase().includes(q))
+    && (f.show === 'all' || (f.show === 'pending' && !isBinned(r)) || (f.show === 'updated' && isBinned(r)) || (f.show === 'unsaved' && CCM.drafts[r['JC #']])))
+    .sort((a, b) => ageOf(b) - ageOf(a));
+}
+function binOpts(seg, sel) {
+  const list = CCM.tax.filter(b => !(b.evOnly && seg !== 'EV')).map(b => b.name);
+  if (sel && !list.includes(sel)) list.push(sel);
+  return `<option value="">— Binning —</option>` + list.map(b => `<option value="${esc(b)}"${b === sel ? ' selected' : ''}>${esc(prettyBin(b))}</option>`).join('');
+}
+function subOpts(bin, sel) {
+  const b = CCM.tax.find(x => x.name === bin); const list = b ? b.subs.slice() : [];
+  if (sel && !list.includes(sel)) list.push(sel);
+  return `<option value="">${bin ? '— Sub binning —' : '— choose Binning first —'}</option>` + list.map(s => `<option value="${esc(s)}"${s === sel ? ' selected' : ''}>${esc(s)}</option>`).join('');
+}
+function ccmRender() {
+  const sum = document.getElementById('ccmSum'), list = document.getElementById('ccmList');
+  if (!CCM.f.ccm) {
+    sum.innerHTML = ''; list.innerHTML = `<div class="card muted">Select your name in the <b>CCM</b> list to see your open JCs.</div>`; ccmSaveStatus(); return;
+  }
+  const base = ccmBase(), done = base.filter(isBinned).length;
+  const unsaved = base.filter(r => CCM.drafts[r['JC #']]).length;
+  sum.innerHTML = `<div class="kpis">
+    <div class="kpi"><div class="v">${base.length}</div><div class="l">My open JCs</div></div>
+    <div class="kpi g"><div class="v">${done}</div><div class="l">Updated</div></div>
+    <div class="kpi r"><div class="v">${base.length - done}</div><div class="l">Pending update</div></div>
+    <div class="kpi a"><div class="v">${unsaved}</div><div class="l">Unsaved on this device</div></div>
+    <div class="kpi"><div class="v">${pct(done, base.length)}%</div><div class="l">Completion</div><div class="prog" style="margin-top:6px"><i style="width:${pct(done, base.length)}%"></i></div></div>
+  </div>`;
+  const rows = ccmFiltered();
+  if (!rows.length) { list.innerHTML = `<div class="card muted">No JCs match these filters.</div>`; ccmSaveStatus(); return; }
+  list.innerHTML = rows.slice(0, CCM.limit).map(ccmCard).join('') +
+    (rows.length > CCM.limit ? `<div style="text-align:center;margin:10px"><button onclick="CCM.limit+=60;ccmRender()">Show more (${rows.length - CCM.limit} more)</button></div>` : '') +
+    `<div class="muted" style="text-align:center;font-size:12px;margin:6px">${rows.length} JC(s) shown · oldest first</div>`;
+  ccmSaveStatus();
+}
+function ccmCard(r) {
+  const jc = r['JC #'], v = curVal(r), d = CCM.drafts[jc], a = ageOf(r);
+  const st = d ? (d.bad ? 'bad' : 'dirty') : isBinned(r) ? 'done' : '';
+  const pill = d ? `<span class="pill uns">${d.bad ? 'Incomplete' : 'Unsaved'}</span>` : isBinned(r) ? '<span class="pill ok">Updated</span>' : '<span class="pill pen">Pending</span>';
+  return `<div class="jc ${st}" data-jc="${esc(jc)}">
+  <div class="top"><b>${esc(jc)}</b><span class="age ${ageCls(a)}">${a} d</span><span class="pill ${r['Segment'] === 'EV' ? 'ev' : 'pv'}">${esc(r['Segment'])}</span>${pill}</div>
+  <div class="info">
+    <div><span>JC date:</span> ${esc(fmtD(r['Date']))}</div><div><span>Dealer:</span> ${esc(r['Dealer'])}</div>
+    <div><span>Division:</span> ${esc(r['Division'])}</div><div><span>Model:</span> ${esc(r['PPL'])}</div>
+    <div><span>Reg No:</span> ${esc(r['Registration No'])}</div><div><span>Chassis:</span> ${esc(r['Chassis No'])}</div>
+    <div><span>Service type:</span> ${esc(r['Service Type'])}</div><div><span>SA:</span> ${esc(r['Service Advisor Name New'])}</div>
+    <div><span>KMs:</span> ${esc(r['KMs Run'])}</div>
+  </div>
+  <div class="dms"><b>DMS delay reason:</b> ${esc(r['Job Card Delay Reason'] || '–')}<br><b>Dealer action:</b> ${esc(r['Action on Delay Reason'] || '–')}</div>
+  <div class="inp">
+    <select data-f="bin">${binOpts(r['Segment'], v.bin)}</select>
+    <select data-f="sub">${subOpts(v.bin, v.sub)}</select>
+    <textarea data-f="remark" rows="1" maxlength="1000" placeholder="CCM remark (status, action, expected delivery)">${esc(v.remark)}</textarea>
+  </div>
+  ${r['Updated By'] ? `<div class="meta">Last saved by ${esc(r['Updated By'])} on ${esc(r['Updated At'])}</div>` : ''}
+  </div>`;
+}
+function ccmFieldChanged(e) {
+  const el = e.target, card = el.closest('.jc'); if (!card || !el.dataset.f) return;
+  const jc = card.dataset.jc, r = CCM.byJc[jc]; if (!r) return;
+  const sel = card.querySelectorAll('[data-f]');
+  const val = { bin: sel[0].value, sub: sel[1].value, remark: sel[2].value };
+  if (el.dataset.f === 'bin') { val.sub = ''; sel[1].innerHTML = subOpts(val.bin, ''); }
+  const same = val.bin === (r['Binning'] || '') && val.sub === (r['Sub Binning'] || '') && val.remark === (r['CCM remark'] || '');
+  if (same) delete CCM.drafts[jc];
+  else { val.bad = !val.bin || !val.sub; val.t = Date.now(); CCM.drafts[jc] = val; }
+  saveDrafts();
+  const d = CCM.drafts[jc];
+  card.className = 'jc ' + (d ? (d.bad ? 'bad' : 'dirty') : isBinned(r) ? 'done' : '');
+  const pill = card.querySelector('.top .pill:last-child');
+  pill.outerHTML = d ? `<span class="pill uns">${d.bad ? 'Incomplete' : 'Unsaved'}</span>` : isBinned(r) ? '<span class="pill ok">Updated</span>' : '<span class="pill pen">Pending</span>';
+  ccmSaveStatus();
+}
+function saveDrafts() {
+  if (!store.set('ejc_drafts_v1', CCM.drafts)) {
+    const m = document.getElementById('saveSt'); if (m) m.innerHTML = '<span style="color:var(--red)">This browser is not keeping a backup copy of your changes. Please save now.</span>';
+  }
+}
+function ccmSaveStatus(extra) {
+  const st = document.getElementById('saveSt'), btn = document.getElementById('saveBtn'); if (!st) return;
+  const all = Object.keys(CCM.drafts), bad = all.filter(j => CCM.drafts[j].bad).length, ready = all.length - bad;
+  btn.disabled = CCM.saving || !ready;
+  btn.textContent = CCM.saving ? 'Saving…' : ready ? `Save ${ready} change${ready > 1 ? 's' : ''}` : 'Save';
+  if (extra != null) { st.innerHTML = extra; return; }
+  st.innerHTML = !all.length ? '<span class="muted">All changes saved.</span>'
+    : `<b>${ready}</b> ready to save${bad ? ` · <span style="color:var(--red)">${bad} incomplete (choose both Binning and Sub binning)</span>` : ''} · kept safely on this device until saved`;
+}
+const CHUNK = 25;
+async function ccmSave(isResume) {
+  if (CCM.saving) return;
+  clearTimeout(CCM.retryTimer);
+  const jcs = Object.keys(CCM.drafts).filter(j => !CCM.drafts[j].bad);
+  if (!jcs.length) { store.del('ejc_save_pending'); ccmSaveStatus(); return; }
+  if (!CCM.f.ccm && !isResume) { alert('Select your name in the CCM list first.'); return; }
+  const by = CCM.f.ccm || store.get('ejc_ccm_filters', {}).ccm || 'CCM';
+  CCM.saving = true; store.set('ejc_save_pending', true);
+  let done = 0, gone = 0, invalid = 0;
+  const total = jcs.length;
+  try {
+    for (let i = 0; i < jcs.length; i += CHUNK) {
+      const part = jcs.slice(i, i + CHUNK).filter(j => CCM.drafts[j]);
+      ccmSaveStatus(`<span class="spin"></span> Saving ${done + 1}–${Math.min(done + part.length, total)} of ${total}…`);
+      const sent = part.map(j => ({ jc: j, bin: CCM.drafts[j].bin, sub: CCM.drafts[j].sub, remark: CCM.drafts[j].remark, t: CCM.drafts[j].t }));
+      const res = await api('ccmSave', { code: CCM.code, ccm: by, updates: sent }, 45000);
+      res.saved.forEach(j => {
+        const r = CCM.byJc[j], d = sent.find(x => x.jc === j);
+        if (r && d) { r['Binning'] = d.bin; r['Sub Binning'] = d.sub; r['CCM remark'] = d.remark; r['Updated By'] = by; r['Updated At'] = res.savedAt; }
+        // only clear the draft if it was not edited again while saving
+        if (CCM.drafts[j] && CCM.drafts[j].t === d.t) delete CCM.drafts[j];
+      });
+      res.notFound.forEach(j => { delete CCM.drafts[j]; gone++; });
+      invalid += res.invalid.length;
+      res.invalid.forEach(j => { if (CCM.drafts[j]) CCM.drafts[j].bad = true; });
+      done += part.length;
+      saveDrafts();
+      store.set('ejc_ccm_cache', { rows: CCM.rows, tax: CCM.tax, last: CCM.last, at: Date.now() });
+    }
+    CCM.saving = false; store.del('ejc_save_pending');
+    ccmRender();
+    let m = `<span style="color:var(--green);font-weight:600">✔ Saved ${done - gone - invalid} JC(s).</span>`;
+    if (gone) m += ` ${gone} JC(s) were already closed in the latest data and were skipped.`;
+    if (invalid) m += ` <span style="color:var(--red)">${invalid} had a binning value that is no longer in the list – please choose again.</span>`;
+    ccmSaveStatus(m);
+    const rm = document.getElementById('resumeMsg'); if (rm) rm.innerHTML = '';
+  } catch (e) {
+    CCM.saving = false;
+    ccmRender();
+    if (e.code === 'WRONG_CODE') { ccmSaveStatus(`<span style="color:var(--red)">The access code has changed. Your changes are kept on this device. Click "Change code" and enter the new code, then Save.</span>`); return; }
+    if (e instanceof NetError) {
+      ccmSaveStatus(`<span style="color:var(--amber);font-weight:600">⚠ Network issue – saved ${done} of ${total}. The rest (${total - done}) are kept on this device and will be sent automatically when the network is back.</span>`);
+      CCM.retryTimer = setTimeout(() => ccmSave(true), 20000);
+      return;
+    }
+    ccmSaveStatus(`<span style="color:var(--red)">${esc(e.message)}</span>`);
+  }
+}
+window.addEventListener('online', () => { if (!IS_ADMIN && Object.keys(CCM.drafts).length && store.get('ejc_save_pending', false)) ccmSave(true); });
+window.addEventListener('beforeunload', e => {
+  if (!IS_ADMIN && Object.keys(CCM.drafts).length) { e.preventDefault(); e.returnValue = ''; }
+});
+
+/* ============================== ADMIN page ============================ */
+const ADM = { token: store.get('ejc_admin_token', ''), rows: [], closed: [], tax: [], last: null, tab: 'dash',
+  f: { ccm: '', seg: '', dealer: '', div: '' }, open: {} };
+
+async function admStart() {
+  hdr('Admin');
+  if (ADM.token) return admLoad();
+  let st;
+  try { st = await api('status'); } catch (e) { $app.innerHTML = `<div class="center card"><div class="msg err">${esc(e.message)}</div><button onclick="admStart()">Try again</button></div>`; return; }
+  if (!st.adminExists) return admSetup();
+  admLogin();
+}
+function admSetup() {
+  $app.innerHTML = `<div class="center card"><h2>Create admin login</h2>
+  <p class="muted">First-time setup. Only one admin login can be created – whoever creates it becomes the admin.</p>
+  <input id="u" placeholder="Login ID"><input id="p" type="password" placeholder="Password (8+ chars, letters and numbers)">
+  <input id="p2" type="password" placeholder="Repeat password"><button class="pri" id="b" style="width:100%">Create login</button><div id="m"></div></div>`;
+  document.getElementById('b').onclick = async () => {
+    const u = document.getElementById('u').value, p = document.getElementById('p').value, p2 = document.getElementById('p2').value, m = document.getElementById('m');
+    if (p !== p2) { m.innerHTML = '<div class="msg err">Passwords do not match.</div>'; return; }
+    try { const r = await api('setupAdmin', { id: u, pw: p }); ADM.token = r.token; store.set('ejc_admin_token', r.token); admLoad(); }
+    catch (e) { m.innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
+  };
+}
+function admLogin(msg) {
+  $app.innerHTML = `<div class="center card"><h2>Admin login</h2>${msg ? `<div class="msg warn">${esc(msg)}</div>` : ''}
+  <input id="u" placeholder="Login ID" autocomplete="username"><input id="p" type="password" placeholder="Password" autocomplete="current-password">
+  <button class="pri" id="b" style="width:100%">Log in</button><div id="m"></div></div>`;
+  const go = async () => {
+    try { const r = await api('login', { id: document.getElementById('u').value, pw: document.getElementById('p').value }); ADM.token = r.token; store.set('ejc_admin_token', r.token); admLoad(); }
+    catch (e) { document.getElementById('m').innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
+  };
+  document.getElementById('b').onclick = go; document.getElementById('p').onkeydown = e => { if (e.key === 'Enter') go(); };
+}
+function admExpired(e) {
+  if (e && e.code === 'SESSION_EXPIRED') { ADM.token = ''; store.del('ejc_admin_token'); admLogin('Session expired – please log in again.'); return true; }
+  return false;
+}
+async function admLoad() {
+  $app.innerHTML = '<div class="center muted"><span class="spin"></span> Loading data…</div>';
+  try {
+    const d = await api('adminData', { token: ADM.token }, 90000);
+    ADM.rows = d.rows.map(r => Object.assign(r, { 'JC Open Days': num(r['JC Open Days']) }));
+    ADM.closed = d.closed; ADM.tax = d.taxonomy; ADM.last = d.lastUpload; ADM.ccmCodeSet = d.ccmCodeSet;
+    admShell();
+  } catch (e) {
+    if (admExpired(e)) return;
+    $app.innerHTML = `<div class="center card"><div class="msg err">${esc(e.message)}</div><button onclick="admLoad()">Try again</button></div>`;
+  }
+}
+function admShell() {
+  const L = ADM.last;
+  hdr(L ? `Admin · data as on <b>${esc(fmtD(L.dataDate))}</b> · uploaded ${esc(L.uploadedAt)} · ${ADM.rows.length} open JCs` : 'Admin · no data uploaded yet',
+    `<button onclick="admLoad()">↻ Refresh</button> <button onclick="admLogout()">Log out</button>`);
+  $app.innerHTML = `<div class="tabs">
+    <button data-t="dash">Dashboard</button><button data-t="upload">Upload daily data</button><button data-t="set">Settings</button>
+  </div><div id="tabBody"></div>`;
+  $app.querySelectorAll('.tabs button').forEach(b => b.onclick = () => { ADM.tab = b.dataset.t; admTab(); });
+  if (!ADM.rows.length && ADM.tab === 'dash') ADM.tab = 'upload';
+  if (!ADM.ccmCodeSet && ADM.rows.length && ADM.tab === 'dash') {
+    $app.insertAdjacentHTML('afterbegin', `<div class="msg warn">CCMs cannot open the update page yet – set the <b>CCM access code</b> in Settings.</div>`);
+  }
+  admTab();
+}
+async function admLogout() { try { await api('logout', { token: ADM.token }); } catch (e) {} ADM.token = ''; store.del('ejc_admin_token'); admLogin(); }
+function admTab() {
+  $app.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === ADM.tab));
+  ({ dash: admDash, upload: admUpload, set: admSettings })[ADM.tab]();
+}
+
+/* ---------- dashboard ---------- */
+function admFiltered() {
+  const f = ADM.f;
+  return ADM.rows.filter(r => (!f.ccm || r['CCM'] === f.ccm) && (!f.seg || r['Segment'] === f.seg) && (!f.dealer || r['Dealer'] === f.dealer) && (!f.div || r['Division'] === f.div));
+}
+function admDash() {
+  const tb = document.getElementById('tabBody');
+  if (!ADM.rows.length) { tb.innerHTML = '<div class="card muted">No data yet. Upload the daily Open JC file first.</div>'; return; }
+  const f = ADM.f, all = ADM.rows;
+  const ccms = uniq(all.map(r => r['CCM'])); if (!ccms.includes(f.ccm)) f.ccm = '';
+  const b1 = all.filter(r => !f.ccm || r['CCM'] === f.ccm);
+  const segs = uniq(b1.map(r => r['Segment'])); if (!segs.includes(f.seg)) f.seg = '';
+  const b2 = b1.filter(r => !f.seg || r['Segment'] === f.seg);
+  const dealers = uniq(b2.map(r => r['Dealer'])); if (!dealers.includes(f.dealer)) f.dealer = '';
+  const b3 = b2.filter(r => !f.dealer || r['Dealer'] === f.dealer);
+  const divs = uniq(b3.map(r => r['Division'])); if (!divs.includes(f.div)) f.div = '';
+  const rows = admFiltered(), S = statOf('All', rows);
+  const L = ADM.last || {};
+  tb.innerHTML = `
+  <div class="card filters"><div class="row">
+    <label class="f">CCM<select id="dCcm">${opts(ccms, f.ccm, 'All CCMs')}</select></label>
+    <label class="f">Segment<select id="dSeg">${opts(segs, f.seg, 'All')}</select></label>
+    <label class="f">Dealer<select id="dDealer">${opts(dealers, f.dealer, 'All dealers')}</select></label>
+    <label class="f">Division<select id="dDiv">${opts(divs, f.div, 'All divisions')}</select></label>
+    <button onclick="ADM.f={ccm:'',seg:'',dealer:'',div:''};admDash()">Reset</button>
+    <span style="flex:1"></span>
+    <button class="pri" onclick="admDownload(false)">⬇ Download latest data (Excel)</button>
+    <button onclick="admDownload(true)">⬇ Download this filtered view</button>
+  </div></div>
+  <div class="kpis">
+    <div class="kpi"><div class="v">${S.total}</div><div class="l">Open JCs</div></div>
+    <div class="kpi"><div class="v">${S.pv}</div><div class="l">PV</div></div>
+    <div class="kpi t"><div class="v">${S.ev}</div><div class="l">EV</div></div>
+    <div class="kpi g"><div class="v">${S.upd} <small style="font-size:13px">(${S.fill}%)</small></div><div class="l">Updated by CCM</div></div>
+    <div class="kpi r"><div class="v">${S.pen}</div><div class="l">Pending CCM update</div></div>
+    <div class="kpi a"><div class="v">${S.gt7}</div><div class="l">Open &gt; 7 days</div></div>
+    <div class="kpi r"><div class="v">${S.gt30}</div><div class="l">Open &gt; 30 days</div></div>
+    <div class="kpi"><div class="v">${S.avg}</div><div class="l">Avg open days</div></div>
+    <div class="kpi g"><div class="v">${L.closed != null ? L.closed : '–'}</div><div class="l">Closed since last file</div></div>
+    <div class="kpi"><div class="v">${L.newJCs != null ? L.newJCs : '–'}</div><div class="l">New JCs in last file</div></div>
+  </div>
+  <div class="card"><h2>CCM-wise update status &amp; ageing</h2><div class="tw">${tblGroup(groupStats(rows, r => r['CCM']), 'CCM', S, true)}</div></div>
+  <div class="card"><h2>Binning analysis × age <small>click a bin to see its sub-bins</small></h2><div class="tw" id="binTbl">${tblBinAge(rows)}</div></div>
+  <div class="grid2">
+    <div class="card"><h2>Age analysis <small>JC open days</small></h2>${ageBars(rows)}</div>
+    <div class="card"><h2>Segment-wise</h2><div class="tw">${tblGroup(groupStats(rows, r => r['Segment']), 'Segment', S, false)}</div>
+      <h2 style="margin-top:16px">Binning share</h2>${binShareBars(rows)}</div>
+  </div>
+  <div class="card"><h2>CCM × age bucket</h2><div class="tw">${tblAgeMatrix(rows, r => r['CCM'], 'CCM')}</div></div>
+  <div class="card"><h2>Binning × CCM</h2><div class="tw">${tblBinBy(rows, r => r['CCM'])}</div></div>
+  <div class="card"><h2>Dealer-wise</h2><div class="tw">${tblGroup(groupStats(rows, r => r['Dealer']), 'Dealer', S, true, true)}</div></div>
+  <div class="card"><h2>Division-wise</h2><div class="tw">${tblGroup(groupStats(rows, r => r['Division']), 'Division', S, true, true)}</div></div>
+  <div class="card"><h2>Oldest 25 open JCs</h2><div class="tw">${tblOldest(rows)}</div></div>`;
+  [['dCcm', 'ccm'], ['dSeg', 'seg'], ['dDealer', 'dealer'], ['dDiv', 'div']].forEach(([id, k]) => document.getElementById(id).onchange = e => { ADM.f[k] = e.target.value; admDash(); });
+  document.getElementById('binTbl').addEventListener('click', e => {
+    const tr = e.target.closest('tr[data-bin]'); if (!tr) return;
+    ADM.open[tr.dataset.bin] = !ADM.open[tr.dataset.bin]; document.getElementById('binTbl').innerHTML = tblBinAge(admFiltered());
+  });
+}
+function heat(v, max) {
+  if (!v || !max) return '';
+  const a = 0.08 + 0.5 * v / max; return ` style="background:rgba(29,100,216,${a.toFixed(2)})"`;
+}
+function ragFill(p) { return p >= 90 ? 'color:var(--green)' : p >= 60 ? 'color:var(--amber)' : 'color:var(--red)'; }
+function tblGroup(stats, label, S, showSeg, showTop) {
+  stats.sort((a, b) => b.total - a.total);
+  const cols = `<th class="l">${label}</th><th>Open JCs</th>${showSeg ? '<th>PV</th><th>EV</th>' : ''}<th>Updated</th><th>Pending</th><th>Update %</th><th>&gt;7 d</th><th>&gt;30 d</th><th>Avg days</th>${showTop ? '<th class="l">Top bin</th>' : ''}`;
+  const tr = s => `<td class="l">${esc(s.key)}</td><td>${s.total}</td>${showSeg ? `<td>${s.pv}</td><td>${s.ev}</td>` : ''}<td>${s.upd}</td><td>${s.pen}</td><td style="font-weight:600;${ragFill(s.fill)}">${s.fill}%</td><td>${s.gt7}</td><td>${s.gt30}</td><td>${s.avg}</td>${showTop ? `<td class="l">${esc(s.topBin)}</td>` : ''}`;
+  return `<table><thead><tr>${cols}</tr></thead><tbody>${stats.map(s => `<tr>${tr(s)}</tr>`).join('')}<tr class="tot">${tr(Object.assign({}, S, { key: 'Total' }))}</tr></tbody></table>`;
+}
+function tblBinAge(rows) {
+  const order = binOrder(ADM.tax, rows), tot = rows.length;
+  const g = {}; order.forEach(b => g[b] = { b: AGE_BUCKETS.map(() => 0), n: 0, subs: {} });
+  rows.forEach(r => {
+    const bn = isBinned(r) ? r['Binning'] : NOT_BINNED, k = bucketOf(ageOf(r)); const x = g[bn];
+    x.b[k]++; x.n++;
+    const sb = isBinned(r) ? (r['Sub Binning'] || '(no sub-bin)') : null;
+    if (sb) { x.subs[sb] = x.subs[sb] || AGE_BUCKETS.map(() => 0); x.subs[sb][k]++; }
+  });
+  const max = Math.max(1, ...order.flatMap(b => g[b].b));
+  let h = `<table><thead><tr><th class="l">Binning</th>${AGE_BUCKETS.map(a => `<th>${a} d</th>`).join('')}<th>Total</th><th>Share</th><th class="l" style="width:160px"></th></tr></thead><tbody>`;
+  order.forEach(bn => {
+    const x = g[bn]; if (!x.n) return;
+    const canOpen = bn !== NOT_BINNED;
+    h += `<tr class="${canOpen ? 'click' : ''}" ${canOpen ? `data-bin="${esc(bn)}"` : ''}><td class="l">${canOpen ? (ADM.open[bn] ? '▾ ' : '▸ ') : ''}<b>${esc(prettyBin(bn))}</b></td>${x.b.map(v => `<td${heat(v, max)}>${v || ''}</td>`).join('')}<td><b>${x.n}</b></td><td>${pct(x.n, tot)}%</td><td class="l"><div class="bar"><i style="width:${pct(x.n, tot)}%;${bn === NOT_BINNED ? 'background:#c0262d' : ''}"></i></div></td></tr>`;
+    if (ADM.open[bn]) Object.entries(x.subs).sort((a, b) => b[1].reduce((p, q) => p + q) - a[1].reduce((p, q) => p + q)).forEach(([s, arr]) => {
+      const n = arr.reduce((p, q) => p + q, 0);
+      h += `<tr class="sub"><td class="l">${esc(s)}</td>${arr.map(v => `<td>${v || ''}</td>`).join('')}<td>${n}</td><td>${pct(n, tot)}%</td><td></td></tr>`;
+    });
+  });
+  const colT = AGE_BUCKETS.map((_, i) => order.reduce((p, b) => p + g[b].b[i], 0));
+  h += `<tr class="tot"><td class="l">Total</td>${colT.map(v => `<td>${v}</td>`).join('')}<td>${tot}</td><td>100%</td><td></td></tr></tbody></table>`;
+  return h;
+}
+function ageBars(rows) {
+  const segs = ['All', 'PV', 'EV'];
+  let h = '';
+  segs.forEach(sg => {
+    const rs = sg === 'All' ? rows : rows.filter(r => r['Segment'] === sg); if (!rs.length) return;
+    const b = AGE_BUCKETS.map(() => 0); rs.forEach(r => b[bucketOf(ageOf(r))]++);
+    h += `<div style="margin:8px 0 2px;font-size:12px;font-weight:600">${sg} · ${rs.length} JCs</div><div class="stack">${b.map((v, i) => v ? `<span title="${AGE_BUCKETS[i]} days: ${v}" style="width:${v * 100 / rs.length}%;background:${AGE_COLORS[i]}"></span>` : '').join('')}</div>`;
+  });
+  const b = AGE_BUCKETS.map(() => 0); rows.forEach(r => b[bucketOf(ageOf(r))]++);
+  h += `<div class="legend">${AGE_BUCKETS.map((a, i) => `<span><i style="background:${AGE_COLORS[i]}"></i>${a} d: <b>${b[i]}</b> (${pct(b[i], rows.length)}%)</span>`).join('')}</div>`;
+  return h;
+}
+function binShareBars(rows) {
+  const order = binOrder(ADM.tax, rows), c = {}; rows.forEach(r => { const b = isBinned(r) ? r['Binning'] : NOT_BINNED; c[b] = (c[b] || 0) + 1; });
+  const max = Math.max(1, ...Object.values(c));
+  return '<table>' + order.filter(b => c[b]).sort((a, b) => c[b] - c[a]).map(b => `<tr><td class="l">${esc(prettyBin(b))}</td><td style="width:45%"><div class="bar"><i style="width:${c[b] * 100 / max}%;${b === NOT_BINNED ? 'background:#c0262d' : ''}"></i></div></td><td>${c[b]}</td><td>${pct(c[b], rows.length)}%</td></tr>`).join('') + '</table>';
+}
+function tblAgeMatrix(rows, keyFn, label) {
+  const st = groupStats(rows, keyFn).sort((a, b) => b.total - a.total), S = statOf('Total', rows);
+  const max = Math.max(1, ...st.flatMap(s => s.b));
+  const tr = (s, hm) => `<td class="l">${esc(s.key)}</td>${s.b.map(v => `<td${hm ? heat(v, max) : ''}>${v || ''}</td>`).join('')}<td><b>${s.total}</b></td><td>${s.gt7}</td><td>${pct(s.gt7, s.total)}%</td><td>${s.gt30}</td><td>${pct(s.gt30, s.total)}%</td>`;
+  return `<table><thead><tr><th class="l">${label}</th>${AGE_BUCKETS.map(a => `<th>${a} d</th>`).join('')}<th>Total</th><th>&gt;7 d</th><th>&gt;7 d %</th><th>&gt;30 d</th><th>&gt;30 d %</th></tr></thead><tbody>${st.map(s => `<tr>${tr(s, true)}</tr>`).join('')}<tr class="tot">${tr(S, false)}</tr></tbody></table>`;
+}
+function tblBinBy(rows, keyFn) {
+  const keys = uniq(rows.map(keyFn)), order = binOrder(ADM.tax, rows).filter(b => rows.some(r => (isBinned(r) ? r['Binning'] : NOT_BINNED) === b));
+  const c = {}; rows.forEach(r => { const b = isBinned(r) ? r['Binning'] : NOT_BINNED, k = keyFn(r); c[b + '|' + k] = (c[b + '|' + k] || 0) + 1; });
+  const max = Math.max(1, ...Object.values(c));
+  return `<table><thead><tr><th class="l">Binning</th>${keys.map(k => `<th>${esc(k)}</th>`).join('')}<th>Total</th></tr></thead><tbody>` +
+    order.map(b => { const t = keys.reduce((p, k) => p + (c[b + '|' + k] || 0), 0); return `<tr><td class="l">${esc(prettyBin(b))}</td>${keys.map(k => `<td${heat(c[b + '|' + k], max)}>${c[b + '|' + k] || ''}</td>`).join('')}<td><b>${t}</b></td></tr>`; }).join('') +
+    `<tr class="tot"><td class="l">Total</td>${keys.map(k => `<td>${rows.filter(r => keyFn(r) === k).length}</td>`).join('')}<td>${rows.length}</td></tr></tbody></table>`;
+}
+function tblOldest(rows) {
+  const o = rows.slice().sort((a, b) => ageOf(b) - ageOf(a)).slice(0, 25);
+  return `<table><thead><tr><th class="l">JC #</th><th>Days</th><th class="l">Seg</th><th class="l">CCM</th><th class="l">Division</th><th class="l">Model</th><th class="l">DMS delay reason</th><th class="l">Binning</th><th class="l">Sub binning</th><th class="l">CCM remark</th></tr></thead><tbody>` +
+    o.map(r => `<tr><td class="l">${esc(r['JC #'])}</td><td><span class="age ${ageCls(ageOf(r))}">${ageOf(r)}</span></td><td class="l">${esc(r['Segment'])}</td><td class="l">${esc(r['CCM'])}</td><td class="l">${esc(r['Division'])}</td><td class="l">${esc(r['PPL'])}</td><td class="l">${esc(r['Job Card Delay Reason'])}</td><td class="l">${isBinned(r) ? esc(prettyBin(r['Binning'])) : '<span class="pill pen">Pending</span>'}</td><td class="l">${esc(r['Sub Binning'])}</td><td class="l" style="white-space:normal;min-width:220px">${esc(r['CCM remark'])}</td></tr>`).join('') + '</tbody></table>';
+}
+
+/* ---------- Excel library (loaded only on the admin page) ---------- */
+let excelReady = null;
+function loadExcel() {
+  if (window.ExcelJS) return Promise.resolve();
+  const srcs = ['lib/exceljs.min.js', 'https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js'];
+  const tryLoad = i => new Promise((ok, bad) => {
+    const s = document.createElement('script'); s.src = srcs[i];
+    s.onload = ok; s.onerror = () => { s.remove(); i + 1 < srcs.length ? tryLoad(i + 1).then(ok, bad) : bad(new Error('Could not load the Excel library. Check the internet connection.')); };
+    document.head.appendChild(s);
+  });
+  if (!excelReady) excelReady = tryLoad(0).catch(e => { excelReady = null; throw e; });
+  return excelReady;
+}
+
+/* ---------- download ---------- */
+const EXPORT_COLS = ['Date', 'Sale Date', 'Region', 'JC #', 'Dealer', 'Division', 'Name', 'Chassis No', 'PPL', 'Registration No', 'Service Advisor Name New',
+  'Service Type', 'Job Type', 'Critical', 'KMs Run', 'Status', 'JC Open Days', 'Job Card Delay Reason', 'Action on Delay Reason', 'Segment', 'CCM',
+  'Binning', 'Sub Binning', 'CCM remark', 'Updated By', 'Updated At', 'First Seen'];
+async function admDownload(filtered) {
+  try { await loadExcel(); } catch (e) { alert(e.message); return; }
+  const rows = filtered ? admFiltered() : ADM.rows;
+  const wb = new ExcelJS.Workbook(); wb.creator = TITLE; wb.created = new Date();
+  const HEAD = { font: { bold: true, color: { argb: 'FFFFFFFF' } }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0B2545' } }, alignment: { vertical: 'middle', wrapText: true } };
+  const styleHead = ws => { ws.getRow(1).eachCell(c => { c.font = HEAD.font; c.fill = HEAD.fill; c.alignment = HEAD.alignment; }); ws.getRow(1).height = 30; ws.views = [{ state: 'frozen', ySplit: 1 }]; };
+  const toDate = s => { const m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])) : (s || ''); };
+  // 1. data
+  const ws = wb.addWorksheet('Open JC Data');
+  ws.addRow(EXPORT_COLS);
+  rows.forEach(r => ws.addRow(EXPORT_COLS.map(c => {
+    const v = r[c];
+    if (c === 'Date' || c === 'Sale Date' || c === 'First Seen') return toDate(v);
+    if (c === 'KMs Run' || c === 'JC Open Days') return v === '' || v == null ? '' : num(v);
+    return v == null ? '' : v;
+  })));
+  styleHead(ws); ws.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: EXPORT_COLS.length } };
+  const widths = { 'Date': 11, 'Sale Date': 11, 'Region': 8, 'JC #': 27, 'Dealer': 30, 'Division': 32, 'Name': 22, 'Chassis No': 20, 'PPL': 12, 'Registration No': 13, 'Service Advisor Name New': 20,
+    'Service Type': 16, 'Job Type': 8, 'Critical': 14, 'KMs Run': 9, 'Status': 7, 'JC Open Days': 9, 'Job Card Delay Reason': 26, 'Action on Delay Reason': 50, 'Segment': 8, 'CCM': 18,
+    'Binning': 28, 'Sub Binning': 34, 'CCM remark': 50, 'Updated By': 18, 'Updated At': 16, 'First Seen': 11 };
+  EXPORT_COLS.forEach((c, i) => { const col = ws.getColumn(i + 1); col.width = widths[c] || 12; if (/Date|First Seen/.test(c)) col.numFmt = 'dd-mmm-yy'; });
+  ['Binning', 'Sub Binning', 'CCM remark'].forEach(c => { ws.getCell(1, EXPORT_COLS.indexOf(c) + 1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF12805C' } }; });
+  // summary sheets
+  const sumSheet = (name, label, stats, withSeg) => {
+    const s = wb.addWorksheet(name);
+    const head = [label, 'Open JCs'].concat(withSeg ? ['PV', 'EV'] : []).concat(['Updated', 'Pending', 'Update %'], AGE_BUCKETS.map(a => a + ' d'), ['>7 d', '>30 d', 'Avg days', 'Top bin']);
+    s.addRow(head);
+    const line = x => [x.key, x.total].concat(withSeg ? [x.pv, x.ev] : []).concat([x.upd, x.pen, x.fill / 100], x.b, [x.gt7, x.gt30, x.avg, x.topBin]);
+    stats.sort((a, b) => b.total - a.total).forEach(x => s.addRow(line(x)));
+    const t = s.addRow(line(Object.assign(statOf('Total', rows), { key: 'Total' }))); t.font = { bold: true };
+    styleHead(s); s.getColumn(1).width = 36; for (let i = 2; i <= head.length; i++) s.getColumn(i).width = 10; s.getColumn(head.length).width = 34;
+    s.getColumn(head.indexOf('Update %') + 1).numFmt = '0.0%';
+  };
+  sumSheet('CCM Summary', 'CCM', groupStats(rows, r => r['CCM']), true);
+  // bin x age
+  const ba = wb.addWorksheet('Binning x Age');
+  ba.addRow(['Binning', 'Sub Binning'].concat(AGE_BUCKETS.map(a => a + ' d'), ['Total', 'Share %']));
+  const order = binOrder(ADM.tax, rows);
+  order.forEach(bn => {
+    const rs = rows.filter(r => (isBinned(r) ? r['Binning'] : NOT_BINNED) === bn); if (!rs.length) return;
+    const b = AGE_BUCKETS.map(() => 0); rs.forEach(r => b[bucketOf(ageOf(r))]++);
+    const br = ba.addRow([prettyBin(bn), 'All'].concat(b, [rs.length, rs.length / rows.length])); br.font = { bold: true };
+    if (bn !== NOT_BINNED) uniq(rs.map(r => r['Sub Binning'] || '(no sub-bin)')).forEach(sb => {
+      const ss = rs.filter(r => (r['Sub Binning'] || '(no sub-bin)') === sb), b2 = AGE_BUCKETS.map(() => 0); ss.forEach(r => b2[bucketOf(ageOf(r))]++);
+      ba.addRow(['', sb].concat(b2, [ss.length, ss.length / rows.length]));
+    });
+  });
+  const tb = AGE_BUCKETS.map((_, i) => rows.filter(r => bucketOf(ageOf(r)) === i).length);
+  ba.addRow(['Total', ''].concat(tb, [rows.length, 1])).font = { bold: true };
+  styleHead(ba); ba.getColumn(1).width = 34; ba.getColumn(2).width = 40; ba.getColumn(AGE_BUCKETS.length + 4).numFmt = '0.0%';
+  // bin x CCM
+  const bc = wb.addWorksheet('Binning x CCM'); const ccmKeys = uniq(rows.map(r => r['CCM']));
+  bc.addRow(['Binning'].concat(ccmKeys, ['Total']));
+  order.forEach(bn => {
+    const rs = rows.filter(r => (isBinned(r) ? r['Binning'] : NOT_BINNED) === bn); if (!rs.length) return;
+    bc.addRow([prettyBin(bn)].concat(ccmKeys.map(k => rs.filter(r => r['CCM'] === k).length || ''), [rs.length]));
+  });
+  bc.addRow(['Total'].concat(ccmKeys.map(k => rows.filter(r => r['CCM'] === k).length), [rows.length])).font = { bold: true };
+  styleHead(bc); bc.getColumn(1).width = 34; for (let i = 2; i <= ccmKeys.length + 2; i++) bc.getColumn(i).width = 16;
+  sumSheet('Segment Summary', 'Segment', groupStats(rows, r => r['Segment']), false);
+  sumSheet('Dealer Summary', 'Dealer', groupStats(rows, r => r['Dealer']), true);
+  sumSheet('Division Summary', 'Division', groupStats(rows, r => r['Division']), true);
+  if (!filtered && ADM.closed.length) {
+    const cs = wb.addWorksheet('Closed JCs (60 days)'); const cc = EXPORT_COLS.concat(['Closed On']);
+    cs.addRow(cc); ADM.closed.forEach(r => cs.addRow(cc.map(c => r[c] == null ? '' : r[c]))); styleHead(cs);
+    cc.forEach((c, i) => cs.getColumn(i + 1).width = widths[c] || 12);
+  }
+  const buf = await wb.xlsx.writeBuffer();
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+  a.download = `Line_East2_Open_JC_Analysis_${(ADM.last && ADM.last.dataDate) || 'data'}${filtered ? '_filtered' : ''}.xlsx`;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+}
+
+/* ---------- upload ---------- */
+const HEADER_ALIASES = { 'binning': 'Binning', 'sub binning': 'Sub Binning', 'sub-binning': 'Sub Binning', 'ccm remark': 'CCM remark', 'ccm remarks': 'CCM remark',
+  'jc #': 'JC #', 'jc no': 'JC #', 'jc number': 'JC #', 'job card no': 'JC #' };
+const KNOWN = EXPORT_COLS.slice(0, 24);
+function canonHeader(h) {
+  const k = String(h || '').replace(/\s+/g, ' ').trim().toLowerCase();
+  if (HEADER_ALIASES[k]) return HEADER_ALIASES[k];
+  return KNOWN.find(c => c.toLowerCase() === k) || null;
+}
+function cellVal(v) {
+  if (v == null) return '';
+  if (v instanceof Date) return v.toISOString().slice(0, 10);
+  if (typeof v === 'object') {
+    if ('result' in v) return cellVal(v.result);
+    if (v.richText) return v.richText.map(t => t.text).join('');
+    if ('text' in v) return String(v.text);
+    if (v.error) return '';
+    return '';
+  }
+  return v;
+}
+let PENDING_UPLOAD = null;
+function admUpload() {
+  const tb = document.getElementById('tabBody');
+  const today = new Date(); const iso = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  tb.innerHTML = `<div class="card"><h2>Upload daily Open JC raw data</h2>
+  <p class="muted">Use the same format as the daily file (sheet with the <b>JC #</b> header – Raw Data). CCM updates already made in the portal are carried forward by JC #. JCs not in the new file are treated as closed.
+  If the workbook also has the binning list sheet (bin names in row 1, sub-bins below), the dropdown list is updated from it.</p>
+  <div class="row"><label class="f">Data date<input type="date" id="upDate" value="${iso}"></label>
+  <label class="f">Excel file<input type="file" id="upFile" accept=".xlsx,.xlsm"></label></div>
+  <div id="upMsg"></div><div id="upPrev"></div></div>`;
+  document.getElementById('upFile').onchange = async e => {
+    const file = e.target.files[0]; if (!file) return;
+    const m = document.getElementById('upMsg'); m.innerHTML = '<div class="msg"><span class="spin"></span> Reading file…</div>';
+    document.getElementById('upPrev').innerHTML = '';
+    const dm = file.name.match(/(\d{1,2})[.\-_](\d{1,2})[.\-_](20\d{2})/);
+    if (dm) document.getElementById('upDate').value = `${dm[3]}-${dm[2].padStart(2, '0')}-${dm[1].padStart(2, '0')}`;
+    try {
+      await loadExcel();
+      const wb = new ExcelJS.Workbook(); await wb.xlsx.load(await file.arrayBuffer());
+      const parsed = parseWorkbook(wb);
+      PENDING_UPLOAD = Object.assign(parsed, { fileName: file.name });
+      m.innerHTML = ''; showPreview();
+    } catch (err) { m.innerHTML = `<div class="msg err">${esc(err.message)}</div>`; }
+  };
+}
+function parseWorkbook(wb) {
+  let raw = null, tax = null;
+  wb.worksheets.forEach(ws => {
+    if (raw && tax) return;
+    for (let r = 1; r <= Math.min(10, ws.rowCount); r++) {
+      const vals = []; ws.getRow(r).eachCell({ includeEmpty: true }, (c, i) => vals[i] = String(cellVal(c.value)).trim());
+      const heads = vals.map(canonHeader);
+      if (!raw && heads.includes('JC #') && heads.includes('Division')) { raw = { ws, row: r, heads }; return; }
+    }
+    if (!tax) {
+      const first = []; ws.getRow(1).eachCell((c, i) => { const v = String(cellVal(c.value)).trim(); if (v) first[i] = v; });
+      const names = first.filter(Boolean);
+      if (names.length >= 3 && !names.some(n => canonHeader(n) === 'JC #') && names.filter(n => /_/.test(n) || ADM.tax.some(b => b.name === n)).length >= Math.ceil(names.length / 2)) {
+        tax = [];
+        first.forEach((n, col) => { if (!n) return; const subs = []; for (let r = 2; r <= ws.rowCount; r++) { const v = String(cellVal(ws.getCell(r, col).value)).trim(); if (v) subs.push(v); } tax.push({ name: n, subs }); });
+      }
+    }
+  });
+  if (!raw) throw new Error('Could not find the Open JC sheet – no row with "JC #" and "Division" headers in the first 10 rows.');
+  const rows = [];
+  for (let r = raw.row + 1; r <= raw.ws.rowCount; r++) {
+    const row = raw.ws.getRow(r), o = {}; let any = false;
+    raw.heads.forEach((h, i) => { if (!h) return; let v = cellVal(row.getCell(i).value); if (typeof v === 'string') v = v.replace(/\s+/g, ' ').trim(); o[h] = v; if (v !== '') any = true; });
+    if (!any || !String(o['JC #'] || '').trim()) continue;
+    if (o['Segment'] !== 'PV' && o['Segment'] !== 'EV') o['Segment'] = String(o['Division'] || '').charAt(0) === '3' ? 'PV' : 'EV';
+    rows.push(o);
+  }
+  if (!rows.length) throw new Error('No JC rows found under the header.');
+  const missing = ['Dealer', 'Division', 'JC Open Days', 'CCM'].filter(c => !raw.heads.includes(c));
+  return { rows, tax, sheet: raw.ws.name, missing };
+}
+function showPreview() {
+  const P = PENDING_UPLOAD, rows = P.rows, cur = {}; ADM.rows.forEach(r => cur[r['JC #']] = r);
+  const ids = new Set(rows.map(r => String(r['JC #']).trim()));
+  const fresh = rows.filter(r => !cur[String(r['JC #']).trim()]).length;
+  const carry = rows.filter(r => { const c = cur[String(r['JC #']).trim()]; return c && (c['Binning'] || c['CCM remark']); }).length;
+  const closed = ADM.rows.filter(r => !ids.has(r['JC #'])).length;
+  const unm = rows.filter(r => !r['CCM'] || /unmapped/i.test(r['CCM'])).length;
+  const withBin = rows.filter(r => r['Binning']).length;
+  const ccm = statOf('', rows);
+  const byCcm = groupStats(rows, r => r['CCM'] || 'UNMAPPED').sort((a, b) => b.total - a.total);
+  document.getElementById('upPrev').innerHTML = `
+  <div class="msg ok">Sheet <b>${esc(P.sheet)}</b> · <b>${rows.length}</b> JC rows read${P.tax ? ` · binning list found (${P.tax.length} bins) – the dropdowns will be updated` : ''}.</div>
+  ${P.missing.length ? `<div class="msg warn">Columns not found: ${P.missing.map(esc).join(', ')}.</div>` : ''}
+  ${unm ? `<div class="msg warn">${unm} row(s) have no CCM (UNMAPPED). The portal will fill them from earlier uploads where the division was mapped; the rest stay UNMAPPED.</div>` : ''}
+  <div class="kpis">
+    <div class="kpi"><div class="v">${rows.length}</div><div class="l">Open JCs in file</div></div>
+    <div class="kpi"><div class="v">${ccm.pv} / ${ccm.ev}</div><div class="l">PV / EV</div></div>
+    <div class="kpi t"><div class="v">${fresh}</div><div class="l">New JCs</div></div>
+    <div class="kpi g"><div class="v">${carry}</div><div class="l">CCM updates carried forward</div></div>
+    <div class="kpi a"><div class="v">${closed}</div><div class="l">Will be marked closed</div></div>
+    <div class="kpi"><div class="v">${withBin}</div><div class="l">Rows with binning in file</div></div>
+  </div>
+  <table style="max-width:520px;margin-bottom:12px"><thead><tr><th class="l">CCM</th><th>JCs</th><th>PV</th><th>EV</th></tr></thead><tbody>${byCcm.map(s => `<tr><td class="l">${esc(s.key)}</td><td>${s.total}</td><td>${s.pv}</td><td>${s.ev}</td></tr>`).join('')}</tbody></table>
+  <button class="pri" id="upGo">Confirm upload</button> <button onclick="PENDING_UPLOAD=null;admUpload()">Cancel</button>`;
+  document.getElementById('upGo').onclick = doUpload;
+}
+async function doUpload() {
+  const P = PENDING_UPLOAD; if (!P) return;
+  const b = document.getElementById('upGo'); b.disabled = true; b.innerHTML = '<span class="spin"></span> Uploading…';
+  try {
+    const r = await api('upload', { token: ADM.token, rows: P.rows, taxonomy: P.tax, fileName: P.fileName, dataDate: document.getElementById('upDate').value }, 180000);
+    PENDING_UPLOAD = null; ADM.tab = 'dash';
+    await admLoad();
+    const i = r.info;
+    $app.insertAdjacentHTML('afterbegin', `<div class="msg ok">Upload done: ${i.rows} open JCs · ${i.newJCs} new · ${i.carriedUpdates} CCM updates carried forward · ${i.closed} closed${i.ccmFilledFromMap ? ` · ${i.ccmFilledFromMap} CCM filled from earlier mapping` : ''}${i.duplicates ? ` · ${i.duplicates} duplicate JC rows ignored` : ''}.</div>`);
+  } catch (e) {
+    if (admExpired(e)) return;
+    b.disabled = false; b.textContent = 'Confirm upload';
+    document.getElementById('upMsg').innerHTML = `<div class="msg err">${esc(e.message)}${e instanceof NetError ? ' Nothing was changed – click Confirm upload again.' : ''}</div>`;
+  }
+}
+
+/* ---------- settings ---------- */
+function admSettings() {
+  const tb = document.getElementById('tabBody');
+  const ccmLink = location.origin + location.pathname;
+  tb.innerHTML = `
+  <div class="card"><h2>Links</h2>
+    <p><b>CCM update page</b> (share with CCMs, with the access code):</p><div class="linkbox">${esc(ccmLink)}</div>
+    <p style="margin-top:10px"><b>Admin (this page):</b></p><div class="linkbox">${esc(ccmLink)}?page=admin</div></div>
+  <div class="card"><h2>CCM access code</h2>
+    <p class="muted">${ADM.ccmCodeSet ? 'A code is set. Setting a new one replaces it – CCMs will be asked for the new code.' : 'Not set yet – CCMs cannot open the update page until you set one.'}</p>
+    <div class="row"><input id="ccNew" placeholder="New CCM access code (4+ characters)"><button class="pri" id="ccSet">Set code</button></div><div id="ccMsg"></div></div>
+  <div class="card"><h2>Change admin password</h2>
+    <div class="row"><input id="pwO" type="password" placeholder="Current password"><input id="pwN" type="password" placeholder="New password"><button id="pwSet">Change</button></div><div id="pwMsg"></div></div>
+  <div class="card"><h2>Binning list in use <small>EV-only bins are marked</small></h2>
+    <div class="tw" style="max-height:340px"><table><thead><tr><th class="l">Binning</th><th class="l">Shown for</th><th class="l">Sub binning</th></tr></thead><tbody>
+    ${ADM.tax.map(b => `<tr><td class="l"><b>${esc(prettyBin(b.name))}</b></td><td class="l">${b.evOnly ? '<span class="pill ev">EV only</span>' : 'PV &amp; EV'}</td><td class="l" style="white-space:normal">${b.subs.map(esc).join(' · ')}</td></tr>`).join('')}
+    </tbody></table></div></div>
+  <div class="card" style="border-color:#f3c0c3"><h2 style="color:var(--red)">Delete all data</h2>
+    <p class="muted">Removes all open JCs, CCM updates, closed JCs and the log from the private sheet. Your login and the CCM code stay. This cannot be undone – download the latest data first.</p>
+    <div class="row"><input id="delPw" type="password" placeholder="Admin password"><input id="delCf" placeholder="Type DELETE"><button class="danger" id="delGo">Delete all data</button></div><div id="delMsg"></div></div>`;
+  document.getElementById('ccSet').onclick = async () => {
+    const m = document.getElementById('ccMsg');
+    try { await api('setCcmCode', { token: ADM.token, code: document.getElementById('ccNew').value }); ADM.ccmCodeSet = true; m.innerHTML = '<div class="msg ok">CCM access code saved. Share it with your CCMs.</div>'; document.getElementById('ccNew').value = ''; }
+    catch (e) { if (!admExpired(e)) m.innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
+  };
+  document.getElementById('pwSet').onclick = async () => {
+    const m = document.getElementById('pwMsg');
+    try { await api('changePassword', { token: ADM.token, oldPw: document.getElementById('pwO').value, newPw: document.getElementById('pwN').value }); m.innerHTML = '<div class="msg ok">Password changed.</div>'; }
+    catch (e) { if (!admExpired(e)) m.innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
+  };
+  document.getElementById('delGo').onclick = async () => {
+    const m = document.getElementById('delMsg');
+    if (!confirm('Delete ALL portal data? This cannot be undone.')) return;
+    try { await api('deleteAll', { token: ADM.token, pw: document.getElementById('delPw').value, confirm: document.getElementById('delCf').value.trim() }); ADM.tab = 'upload'; await admLoad(); }
+    catch (e) { if (!admExpired(e)) m.innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
+  };
+}
+
+/* ================================ start ================================ */
+(IS_ADMIN ? admStart : ccmStart)();
+</script>
+</body>
+</html>
